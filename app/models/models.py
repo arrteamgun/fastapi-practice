@@ -1,5 +1,6 @@
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel
 
-class User(BaseModel):
+
+class FeedBack(BaseModel):
     name: str
-    age: int
+    message: str
