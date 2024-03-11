@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 
-class UserCreate(BaseModel):
+class Product(BaseModel):
+    product_id: int
     name: str
-    email: str
-    age: int
-    is_subscribed: bool
+    category: str
+    price: float
