@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
 
-class FeedBack(BaseModel):
+class UserCreate(BaseModel):
     name: str
-    message: str
+    email: str
+    age: int
+    is_subscribed: bool
