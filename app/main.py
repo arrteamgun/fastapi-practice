@@ -1,17 +1,27 @@
-from fastapi import FastAPI, Request, Response, Header
-from typing import Annotated
-
-from .models.models import User
-
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Depends, status, HTTPException
+from secrets import compare_digest as safe_comp
+from pydantic import BaseModel
+from .models.models import USER_DATA, User
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI()
+security = HTTPBasic()
 
 
-@app.get("/")
-def root(response: Response):
-    user_agent = response.headers.get('user-agent')
-    accept_language = response.headers.get('accept-language')
-    if not user_agent or not accept_language:
-        raise HTTPException(status_code=400, detail="Missed Header")
-    return {"User-Agent": user_agent, "Accept-Language": accept_language}
+def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
+    user = get_user_from_db(credentials.username)
+    if user is None or user.password != credentials.password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    return user
+
+def get_user_from_db(username: str):
+    for user in USER_DATA:
+        if user.username == username:
+            return user
+    return None
+
+
+@app.get("/protected_resource/")
+def get_protected_resource(user: User = Depends(authenticate_user)):
+    return {"message": "You have access to the protected resource!", "user_info": user}
