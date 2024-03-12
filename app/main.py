@@ -1,27 +1,17 @@
-from fastapi import FastAPI, Response, Cookie
-from datetime import datetime
+from fastapi import FastAPI, Request, Response, Header
+from typing import Annotated
+
 from .models.models import User
+
+from fastapi import FastAPI, Request, HTTPException
 
 app = FastAPI()
 
-sample_user: dict = {"username": "Vanya", "password": "123esad"}
-sessions: dict = {}
-fake_db: list[User] = [User(**sample_user)]
 
-
-@app.post("/login")
-async def login(usr: User, response: Response):
-    for u in fake_db:
-        if u.username == usr.username and u.password == usr.password:
-            session_token = "sesstok12"
-            sessions[session_token] = usr
-            return {"message": "куки установлены"}
-    return {"message": "Invalid username or password"}
-
-
-@app.get('/user')
-async def user_info(session_token=Cookie()):
-    user = sessions.get(session_token)
-    if user:
-        return user.dict()
-    return {"message": "Unauthorized"}
+@app.get("/")
+def root(response: Response):
+    user_agent = response.headers.get('user-agent')
+    accept_language = response.headers.get('accept-language')
+    if not user_agent or not accept_language:
+        raise HTTPException(status_code=400, detail="Missed Header")
+    return {"User-Agent": user_agent, "Accept-Language": accept_language}
